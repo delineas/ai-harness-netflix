@@ -12,5 +12,5 @@
     "verbatimModuleSyntax": true,
     "skipLibCheck": true
   },
-  "include": ["server", "web/src", "scripts", "tests", "e2e", "playwright.config.ts", "vite.config.ts", "vitest.config.ts"]
+  "include": ["harness", "server", "web/src", "scripts", "tests", "e2e", "playwright.config.ts", "vite.config.ts", "vitest.config.ts"]
 }

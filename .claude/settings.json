@@ -10,7 +10,9 @@
       "Edit(/scripts/verify.mjs)",
       "Edit(/curso/**)",
       "Edit(/.claude/**)",
-      "Edit(/CLAUDE.md)"
+      "Edit(/CLAUDE.md)",
+      "Edit(/harness/**)",
+      "Edit(/tests/harness/**)"
     ],
     "ask": [
       "Bash(npm install:*)",
@@ -23,6 +25,19 @@
       "Edit(/data/app.db)",
       "Read(/data/app.db)",
       "Bash(*app.db*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Read|Grep|Glob|Edit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/harness/guard.sh"
+          }
+        ]
+      }
     ]
   }
 }
