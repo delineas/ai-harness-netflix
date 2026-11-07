@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Edit(/data/catalog.db)",
+      "Edit(/e2e/**)",
+      "Edit(/playwright.config.ts)",
+      "Edit(/tests/architecture/**)",
+      "Edit(/scripts/verify.mjs)",
+      "Edit(/curso/**)",
+      "Edit(/.claude/**)",
+      "Edit(/CLAUDE.md)"
+    ],
+    "ask": [
+      "Bash(npm install:*)",
+      "Bash(npm i:*)",
+      "Bash(npm add:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm update:*)",
+      "Edit(/package.json)",
+      "Edit(/package-lock.json)",
+      "Edit(/data/app.db)",
+      "Read(/data/app.db)",
+      "Bash(*app.db*)"
+    ]
+  }
+}
