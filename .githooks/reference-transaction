@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Hook de git: reference-transaction. Es el único que ve la creación de una rama
+# (git no tiene un hook "pre-branch"). Solo actúa en el estado "prepared"; si
+# sale con error, git aborta la operación y la rama no llega a existir.
+# stdin: una línea "<valor-viejo> <valor-nuevo> <ref>" por referencia.
+
+fail() { echo "git-hook: $1; rechazo por seguridad." >&2; exit 1; }
+
+if [ "${1:-}" != "prepared" ]; then
+  cat >/dev/null
+  exit 0
+fi
+
+created=""
+prefix="refs/heads/"
+while read -r old new ref; do
+  if [[ "$ref" == "$prefix"* ]]; then
+    # valor viejo todo ceros = la rama no existía; nuevo todo ceros = se borra (siempre se permite)
+    if [[ "$old" =~ ^0+$ && ! "$new" =~ ^0+$ ]]; then
+      created+="${ref#"$prefix"}"$'\n'
+    fi
+  fi
+done
+
+[ -n "$created" ] || exit 0   # commits, fetch, borrados...: no hace falta node
+
+self="${BASH_SOURCE[0]}"
+case "$self" in
+  */*) dir="${self%/*}" ;;
+  *) dir="." ;;
+esac
+root="$(cd "$dir/.." 2>/dev/null && pwd)" || fail "no encuentro el directorio del repo"
+cli="$root/harness/git-cli.ts"
+[ -f "$cli" ] || fail "no encuentro harness/git-cli.ts"
+
+printf '%s' "$created" | node "$cli" new-branches || exit 1

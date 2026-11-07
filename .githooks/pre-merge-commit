@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Hook de git: pre-merge-commit. Un merge que crea commit también cuenta: misma regla de rama.
+fail() { echo "git-hook: $1; rechazo por seguridad." >&2; exit 1; }
+
+self="${BASH_SOURCE[0]}"
+case "$self" in
+  */*) dir="${self%/*}" ;;
+  *) dir="." ;;
+esac
+root="$(cd "$dir/.." 2>/dev/null && pwd)" || fail "no encuentro el directorio del repo"
+cli="$root/harness/git-cli.ts"
+[ -f "$cli" ] || fail "no encuentro harness/git-cli.ts"
+
+branch="$(git symbolic-ref --short -q HEAD 2>/dev/null)" || branch=""
+node "$cli" commit-branch ${branch:+"--branch=$branch"} || exit 1

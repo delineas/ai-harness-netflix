@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Hook de git: pre-commit. Las reglas viven en harness/ (las mismas que el hook de Claude).
+#   1. rechaza el commit en main, en HEAD suelto o en una rama mal nombrada
+#   2. rechaza el commit si lo añadido lleva algo con forma de clave de API o token
+# Cualquier fallo (falta node, falta harness/...) rechaza: exit 1.
+
+fail() { echo "git-hook: $1; rechazo por seguridad." >&2; exit 1; }
+
+self="${BASH_SOURCE[0]}"
+case "$self" in
+  */*) dir="${self%/*}" ;;
+  *) dir="." ;;
+esac
+root="$(cd "$dir/.." 2>/dev/null && pwd)" || fail "no encuentro el directorio del repo"
+cli="$root/harness/git-cli.ts"
+[ -f "$cli" ] || fail "no encuentro harness/git-cli.ts"
+
+branch="$(git symbolic-ref --short -q HEAD 2>/dev/null)" || branch=""
+node "$cli" commit-branch ${branch:+"--branch=$branch"} || exit 1
+
+# Solo lo añadido en este commit. git fija GIT_INDEX_FILE en `commit -a` / `commit <fichero>`,
+# y `git diff --cached` lo respeta: se escanea lo que de verdad entra.
+diff="$(git -c core.quotepath=false diff --cached --no-color --no-ext-diff --no-textconv -U0 --diff-filter=ACMR)" \
+  || fail "no pude leer el diff"
+printf '%s\n' "$diff" | node "$cli" secrets || exit 1

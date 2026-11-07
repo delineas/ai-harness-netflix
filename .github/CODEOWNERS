@@ -1,0 +1,18 @@
+# Lo que juzga o configura al agente. Un PR que toque algo de esta lista necesita la
+# aprobación de su dueño, si la regla de la rama exige la revisión de los dueños
+# (Settings > Rules > Rulesets: «Require review from Code Owners»).
+# GitHub lee este fichero de la rama a la que va el PR. En tu fork, pon tu usuario.
+/harness/              @delineas
+/tests/harness/        @delineas
+/tests/architecture/   @delineas
+/e2e/                  @delineas
+/.claude/              @delineas
+/.githooks/            @delineas
+/.github/              @delineas
+/curso/                @delineas
+/playwright.config.ts  @delineas
+/vitest.config.ts      @delineas
+/package.json          @delineas
+/CLAUDE.md             @delineas
+/AGENTS.md             @delineas
+/scripts/verify.mjs    @delineas

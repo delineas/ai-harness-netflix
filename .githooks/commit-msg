@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Hook de git: commit-msg. Rechaza un mensaje de commit con forma de clave de API o token.
+fail() { echo "git-hook: $1; rechazo por seguridad." >&2; exit 1; }
+
+self="${BASH_SOURCE[0]}"
+case "$self" in
+  */*) dir="${self%/*}" ;;
+  *) dir="." ;;
+esac
+root="$(cd "$dir/.." 2>/dev/null && pwd)" || fail "no encuentro el directorio del repo"
+cli="$root/harness/git-cli.ts"
+[ -f "$cli" ] || fail "no encuentro harness/git-cli.ts"
+[ -f "${1:-}" ] || fail "git no me pasó el fichero del mensaje"
+
+msg="$(cat "$1")" || fail "no pude leer el mensaje"
+printf '%s\n' "$msg" | node "$cli" secrets --text || exit 1

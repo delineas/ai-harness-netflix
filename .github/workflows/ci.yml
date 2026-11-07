@@ -1,0 +1,74 @@
+name: CI
+
+# Lo mismo que se comprueba en local, donde nadie puede saltarse un hook con --no-verify.
+# Para que bloquee de verdad, la regla de main (Settings > Rules > Rulesets) tiene que exigir
+# los checks "CI / branch-rule", "CI / verify" y "CI / secrets", y la revisión de los dueños
+# de .github/CODEOWNERS.
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # La regla de nombres de rama es la de harness/ (isValidBranch, vía harness/git-cli.ts):
+  # este fichero no tiene su propia copia.
+  branch-rule:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: La rama sigue la regla de harness/
+        env:
+          # PR: la rama de origen; push: la rama (o etiqueta) empujada. Siempre por env, nunca interpolada en el script.
+          BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+          IS_TAG: ${{ github.ref_type == 'tag' }}
+          IS_PR: ${{ github.event_name == 'pull_request' }}
+        run: |
+          if [ "$IS_TAG" = "true" ]; then echo "etiqueta $BRANCH: no es una rama"; exit 0; fi
+          # Un push a main es el merge de un PR ya revisado: lo que se exige es que el PR venga de una rama válida.
+          if [ "$IS_PR" != "true" ] && [ "$BRANCH" = "main" ]; then echo "push a main (merge): se omite"; exit 0; fi
+          node harness/git-cli.ts commit-branch "--branch=$BRANCH"
+
+  # Respaldo de los hooks pre-commit/commit-msg: --no-verify no existe en CI.
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Sin claves ni tokens en lo añadido ni en los mensajes
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          BEFORE: ${{ github.event.before }}
+        run: bash .github/scripts/scan-secrets.sh
+
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Catálogo y base de la app (datos de ejemplo)
+        run: npm run setup
+      - name: npm run verify
+        run: npm run verify
