@@ -14,7 +14,7 @@ export default defineConfig({
   webServer: {
     command: "npm start",
     url: `http://localhost:${PORT}/api/stats`,
-    env: { PORT: String(PORT) },
+    env: { PORT: String(PORT), APP_DB_FAKE: "1" }, // reseñas de prueba en memoria, sin datos personales
     reuseExistingServer: false,
     timeout: 120_000,
   },

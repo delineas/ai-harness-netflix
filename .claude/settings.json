@@ -12,7 +12,9 @@
       "Edit(/.claude/**)",
       "Edit(/CLAUDE.md)",
       "Edit(/harness/**)",
-      "Edit(/tests/harness/**)"
+      "Edit(/tests/harness/**)",
+      "Read(/data/app.db)",
+      "Read(/.env)"
     ],
     "ask": [
       "Bash(npm install:*)",
@@ -23,7 +25,6 @@
       "Edit(/package.json)",
       "Edit(/package-lock.json)",
       "Edit(/data/app.db)",
-      "Read(/data/app.db)",
       "Bash(*app.db*)"
     ]
   },
@@ -50,5 +51,17 @@
         ]
       }
     ]
+  },
+  "sandbox": {
+    "enabled": true,
+    "failIfUnavailable": true,
+    "allowUnsandboxedCommands": false,
+    "excludedCommands": [],
+    "filesystem": {
+      "denyRead": [
+        "./data/app.db",
+        "./.env"
+      ]
+    }
   }
 }

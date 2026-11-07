@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { openAppDb } from "../../server/app-db.ts";
+import { createTestAppDb } from "../../server/test-app-db.ts";
 import { approvedReviews, isModerator, pendingReviews } from "../../server/reviews.ts";
 
-const db = openAppDb();
+const db = createTestAppDb();
 
 describe("reviews", () => {
   it("approved reviews contain no emails", () => {

@@ -2,6 +2,7 @@ import { createServer } from "node:http";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { openCatalog } from "./catalog.ts";
 import { openAppDb } from "./app-db.ts";
+import { createTestAppDb } from "./test-app-db.ts";
 import { listTitles, stats, titleDetail } from "./titles.ts";
 import { approvedReviews, createReview, isModerator, listUsers, moderate, pendingReviews } from "./reviews.ts";
 import { serveStatic } from "./static.ts";
@@ -11,7 +12,8 @@ try {
 } catch {}
 
 const catalog = openCatalog();
-const appDb = openAppDb();
+// APP_DB_FAKE=1: in-memory database with made-up reviews (e2e); never touches the real one.
+const appDb = process.env.APP_DB_FAKE === "1" ? createTestAppDb() : openAppDb();
 
 function json(res: ServerResponse, status: number, data: unknown) {
   res.writeHead(status, { "Content-Type": "application/json" });
