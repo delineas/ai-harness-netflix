@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Netflix Explorer</title>
+  </head>
+  <body>
+    <div id="app">
+      <header class="top">
+        <h1>Netflix Explorer</h1>
+        <p id="stats" class="stats" aria-live="polite"></p>
+      </header>
+      <form id="search-form" class="search" role="search">
+        <label>Search titles <input type="search" id="q" name="q" /></label>
+        <label>Kind
+          <select id="kind" name="kind">
+            <option value="all">All</option>
+            <option value="movie">Movies</option>
+            <option value="show">Shows</option>
+          </select>
+        </label>
+        <label>Sort by
+          <select id="sort" name="sort">
+            <option value="title">Title</option>
+            <option value="hours">Hours viewed</option>
+          </select>
+        </label>
+        <button type="submit">Search</button>
+      </form>
+      <div class="layout">
+        <main>
+          <p id="message" role="status"></p>
+          <ul id="grid" class="grid" aria-label="Titles"></ul>
+          <nav class="pager" aria-label="Pagination">
+            <button type="button" id="prev">Previous</button>
+            <span id="page-info"></span>
+            <button type="button" id="next">Next</button>
+          </nav>
+        </main>
+        <aside id="detail"></aside>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
