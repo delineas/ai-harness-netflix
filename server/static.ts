@@ -23,6 +23,18 @@ export function serveStatic(req: IncomingMessage, res: ServerResponse) {
   }
   if (!extname(file)) file = join(ROOT, "index.html");
   else if (existsSync(file) && statSync(file).isDirectory()) file = join(file, "index.html");
-  res.writeHead(200, { "Content-Type": TYPES[extname(file)] ?? "application/octet-stream" });
-  createReadStream(file).pipe(res);
+  if (!existsSync(file) || !statSync(file).isFile()) {
+    res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" }).end("Not found");
+    return;
+  }
+  const stream = createReadStream(file);
+  stream.on("error", (err) => {
+    console.error(err);
+    if (!res.headersSent) res.writeHead(500, { "Content-Type": "text/plain; charset=utf-8" });
+    res.end("Server error");
+  });
+  stream.on("open", () => {
+    res.writeHead(200, { "Content-Type": TYPES[extname(file)] ?? "application/octet-stream" });
+    stream.pipe(res);
+  });
 }

@@ -1,5 +1,3 @@
-export const HOURS_UNIT = "h";
-
 export type ViewRow = { duration: string; hours_viewed: number | null };
 
 export function hoursViewed(rows: ViewRow[]): number {
@@ -8,8 +6,4 @@ export function hoursViewed(rows: ViewRow[]): number {
     if (r.duration === "SEMI_ANNUALLY") total += r.hours_viewed ?? 0;
   }
   return total;
-}
-
-export function roundHours(n: number): number {
-  return Math.round(n);
 }

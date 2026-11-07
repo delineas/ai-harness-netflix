@@ -1,4 +1,8 @@
-import { HOURS_UNIT, roundHours } from "../../server/domain/hours.ts";
+const HOURS_UNIT = "h";
+
+function roundHours(n: number): number {
+  return Math.round(n);
+}
 
 const nf = new Intl.NumberFormat("en-US");
 

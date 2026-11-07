@@ -9,11 +9,14 @@
     "start": "vite build && node server/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:web": "vitest run tests/web --passWithNoTests",
+    "test:web": "vitest run tests/web",
+    "test:e2e": "playwright test",
+    "verify": "node scripts/verify.mjs",
     "romper": "node curso/romper.mjs",
     "paso": "node curso/paso.mjs"
   },
   "devDependencies": {
+    "@playwright/test": "1.65.0",
     "@types/node": "24.19.2",
     "typescript": "7.0.2",
     "vite": "8.3.6",

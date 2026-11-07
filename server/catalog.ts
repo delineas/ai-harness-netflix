@@ -1,5 +1,5 @@
 import { DatabaseSync } from "node:sqlite";
 
 export function openCatalog(path = "data/catalog.db"): DatabaseSync {
-  return new DatabaseSync(path);
+  return new DatabaseSync(path, { readOnly: true });
 }

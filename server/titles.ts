@@ -28,6 +28,12 @@ export function stats(db: DatabaseSync) {
   return { movies: movies.n, shows: shows.n, hoursViewed: h.n };
 }
 
+// R14 (docs/decisions.md): weeks in the top 10 = MAX(cumulative_weeks_in_top10)
+// over the WEEKLY rows (never SEMI_ANNUALLY, R3); 0 if never listed. For a show,
+// the MAX over all its seasons. The ONE definition, used by card and detail.
+const weeksExpr = (col = "") =>
+  `COALESCE(MAX(CASE WHEN ${col}duration = 'WEEKLY' THEN ${col}cumulative_weeks_in_top10 END), 0)`;
+
 const MOVIE_SELECT = `
   SELECT 'movie' AS kind, m.id AS id, m.title AS title, m.release_date AS release_date,
     COALESCE(a.hours, 0) AS hours, COALESCE(a.weeks, 0) AS weeks
@@ -35,7 +41,7 @@ const MOVIE_SELECT = `
   LEFT JOIN (
     SELECT movie_id,
       SUM(CASE WHEN duration = 'SEMI_ANNUALLY' THEN hours_viewed END) AS hours,
-      SUM(CASE WHEN duration = 'WEEKLY' THEN 1 ELSE 0 END) AS weeks
+      ${weeksExpr()} AS weeks
     FROM view_summary WHERE movie_id IS NOT NULL GROUP BY movie_id
   ) a ON a.movie_id = m.id
   WHERE m.title LIKE ? ESCAPE '\\'`;
@@ -47,7 +53,7 @@ const SHOW_SELECT = `
   LEFT JOIN (
     SELECT s.tv_show_id AS show_id,
       SUM(CASE WHEN v.duration = 'SEMI_ANNUALLY' THEN v.hours_viewed END) AS hours,
-      SUM(CASE WHEN v.duration = 'WEEKLY' THEN 1 ELSE 0 END) AS weeks
+      ${weeksExpr("v.")} AS weeks
     FROM view_summary v JOIN season s ON s.id = v.season_id GROUP BY s.tv_show_id
   ) a ON a.show_id = t.id
   WHERE t.title LIKE ? ESCAPE '\\'`;
@@ -103,7 +109,7 @@ export function titleDetail(db: DatabaseSync, kind: string, id: number) {
       .prepare("SELECT duration, hours_viewed FROM view_summary WHERE movie_id = ?")
       .all(id) as ViewRow[];
     const w = db
-      .prepare("SELECT COALESCE(MAX(cumulative_weeks_in_top10), 0) AS n FROM view_summary WHERE movie_id = ?")
+      .prepare(`SELECT ${weeksExpr()} AS n FROM view_summary WHERE movie_id = ?`)
       .get(id) as { n: number };
     return {
       kind: "movie" as const,
@@ -134,7 +140,7 @@ export function titleDetail(db: DatabaseSync, kind: string, id: number) {
     });
     const w = db
       .prepare(
-        `SELECT COALESCE(MAX(v.cumulative_weeks_in_top10), 0) AS n FROM view_summary v
+        `SELECT ${weeksExpr("v.")} AS n FROM view_summary v
          JOIN season s ON s.id = v.season_id WHERE s.tv_show_id = ?`,
       )
       .get(id) as { n: number };
