@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Prueba del guardián (paso 10): este PR no se fusiona.
 # Hook PreToolUse. Lee el JSON del hook por stdin, mira la rama con git en el
 # cwd que trae, y delega la decisión en harness/rules.ts (vía cli.ts).
 # Exit 0 = permite, 2 = bloquea (motivo por stderr).
